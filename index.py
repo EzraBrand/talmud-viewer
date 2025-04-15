@@ -1,7 +1,10 @@
-from app import app
+from flask import Flask, jsonify
 
-# This is the WSGI entry point that Vercel requires
-# Do not change or rename this variable
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return jsonify({"status": "ok", "message": "Hello from Talmud Viewer"})
+
+# Required for Vercel
 app.debug = False
-
-# No need for app.run() here as Vercel handles that part
