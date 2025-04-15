@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talmud Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Talmud Viewer</h1>
+        </header>
+        
+        <div class="input-section">
+            <div class="input-method">
+                <label for="input-method">Input Method:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="input-method" value="dropdown" checked> 
+                        Dropdown Selection
+                    </label>
+                    <label>
+                        <input type="radio" name="input-method" value="url"> 
+                        Sefaria URL
+                    </label>
+                </div>
+            </div>
+            
+            <div id="dropdown-inputs" class="input-group">
+                <div class="select-group">
+                    <label for="tractate">Tractate:</label>
+                    <select id="tractate">
+                        {% for tractate in tractates %}
+                            <option value="{{ tractate }}">{{ tractate }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="select-group">
+                    <label for="page">Page:</label>
+                    <select id="page">
+                        {% for page in pages %}
+                            <option value="{{ page }}">{{ page }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="select-group">
+                    <label for="section">Section:</label>
+                    <select id="section">
+                        <option value="">All Sections</option>
+                        {% for i in range(1, 51) %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div id="url-input" class="input-group" style="display: none;">
+                <label for="sefaria-url">Sefaria URL:</label>
+                <input type="text" id="sefaria-url" placeholder="Enter Sefaria URL (e.g., https://www.sefaria.org.il/Sanhedrin.43b.9)">
+            </div>
+            
+            <button id="fetch-button">Fetch Text</button>
+        </div>
+        
+        <div id="loading" style="display: none;">
+            <p>Loading... <i class="fas fa-spinner fa-spin"></i></p>
+        </div>
+        
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <div id="result-container" style="display: none;">
+            <div id="selection-tools">
+                <button id="select-all">Select All Text (for copy/paste)</button>
+            </div>
+            
+            <div id="talmud-text-container"></div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
