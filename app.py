@@ -1,4 +1,5 @@
 import os
+import os
 from flask import Flask, render_template, request, jsonify
 from utils import (
     parse_sefaria_url, fetch_text, fetch_text_range, 
@@ -65,4 +66,8 @@ def fetch():
     return jsonify(html_data)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=False)
+    # This line is not needed for Vercel deployment
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"})
