@@ -99,10 +99,12 @@
             text-align: right;
             font-weight: bold;
             margin-bottom: 15px;
-            font-size: 16px;
         }
         .english-text {
             margin-bottom: 10px;
+        }
+        .hebrew-text p, .english-text p {
+            margin: 0 0 8px 0;
         }
         .section-separator {
             margin: 15px 0;
@@ -304,19 +306,31 @@
                         const sectionDiv = document.createElement('div');
                         sectionDiv.className = 'talmud-section';
                         
-                        // Add Hebrew text
-                        if (section.hebrew) {
+                        // Add Hebrew text - now as separate paragraphs
+                        if (section.hebrew && section.hebrew.length > 0) {
                             const hebrewDiv = document.createElement('div');
                             hebrewDiv.className = 'hebrew-text';
-                            hebrewDiv.innerHTML = section.hebrew;
+                            
+                            section.hebrew.forEach(sentence => {
+                                const p = document.createElement('p');
+                                p.innerHTML = sentence;
+                                hebrewDiv.appendChild(p);
+                            });
+                            
                             sectionDiv.appendChild(hebrewDiv);
                         }
                         
-                        // Add English text
-                        if (section.english) {
+                        // Add English text - now as separate paragraphs
+                        if (section.english && section.english.length > 0) {
                             const englishDiv = document.createElement('div');
                             englishDiv.className = 'english-text';
-                            englishDiv.innerHTML = section.english;
+                            
+                            section.english.forEach(sentence => {
+                                const p = document.createElement('p');
+                                p.innerHTML = sentence;
+                                englishDiv.appendChild(p);
+                            });
+                            
                             sectionDiv.appendChild(englishDiv);
                         }
                         
@@ -330,7 +344,6 @@
                         }
                     });
                 } else {
-                    // Handle mock or custom formatted data
                     textContainer.innerHTML = '<p>No text found for the given reference.</p>';
                 }
             }

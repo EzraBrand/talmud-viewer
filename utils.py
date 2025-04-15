@@ -9,14 +9,65 @@ term_replacements = {
     "The Sages taught": "A baraita states",
     "Divine Voice": "bat kol",
     "Divine Presence": "Shekhina",
+    "divine inspiration": "Holy Spirit",
+    "Divine Spirit": "Holy Spirit",
+    "the Lord": "YHWH",
+    "leper": "metzora",
+    "leprosy": "tzara'at",
     "phylacteries": "tefillin",
-    "gentile": "non-Jew"
+    "gentile": "non-Jew",
+    "ignoramus": "am ha'aretz",
+    "maidservant": "female slave",
+    "barrel": "jug",
+    "the Holy One, Blessed be He": "God",
+    "son of R'": "ben"
 }
 
 def remove_nikud(text):
     """Remove Hebrew vowel points from text"""
     nikud_pattern = re.compile(r'[\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7]')
     return nikud_pattern.sub('', text)
+
+def split_into_sentences(text):
+    """Split text into sentences while preserving HTML"""
+    if not text:
+        return []
+
+    # Temporarily replace HTML tags and special cases
+    tag_counter = 0
+    tag_map = {}
+
+    def replace_tag(match):
+        nonlocal tag_counter
+        placeholder = f"__TAG_{tag_counter}__"
+        tag_map[placeholder] = match.group(0)
+        tag_counter += 1
+        return placeholder
+
+    text = re.sub(r'<[^>]+>', replace_tag, text)
+
+    # Handle abbreviations
+    for case in ["e.g.", "i.e.", "etc.", "vs.", "Mr.", "Mrs.", "Dr.", "Prof."]:
+        text = text.replace(case, case.replace(".", "@@"))
+
+    # Split by sentence endings
+    sentences = []
+    for s in re.split(r'(?<=[.!?])\s+', text):
+        if not s.strip():
+            continue
+
+        # Ensure sentence ends with punctuation
+        if not s.rstrip()[-1] in '.!?':
+            s = s.rstrip() + "."
+
+        # Restore placeholders
+        s = s.replace("@@", ".")
+        for placeholder, tag in tag_map.items():
+            s = s.replace(placeholder, tag)
+
+        sentences.append(s.strip())
+
+    return sentences
 
 def parse_sefaria_url(url):
     """Parse a Sefaria URL to extract reference information"""
@@ -116,21 +167,25 @@ def process_text_for_display(data):
         if not current_he and not current_en:
             continue
         
-        section = {"hebrew": "", "english": ""}
+        section = {"hebrew": [], "english": []}
         
-        # Hebrew text
+        # Hebrew text - split into sentences
         if current_he:
             current_he = remove_nikud(current_he)
-            section["hebrew"] = current_he
+            section["hebrew"] = split_into_sentences(current_he)
         
-        # English text
+        # English text - split into sentences and apply term replacements
         if current_en:
-            # Apply term replacements
-            for original, replacement in term_replacements.items():
-                pattern = r'\b' + re.escape(original) + r'\b'
-                current_en = re.sub(pattern, replacement, current_en, flags=re.IGNORECASE)
+            sentences = split_into_sentences(current_en)
+            processed_sentences = []
             
-            section["english"] = current_en
+            for sentence in sentences:
+                for original, replacement in term_replacements.items():
+                    pattern = r'\b' + re.escape(original) + r'\b'
+                    sentence = re.sub(pattern, replacement, sentence, flags=re.IGNORECASE)
+                processed_sentences.append(sentence)
+                
+            section["english"] = processed_sentences
         
         result["sections"].append(section)
     
