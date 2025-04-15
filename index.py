@@ -1,4 +1,6 @@
 from flask import Flask, render_template, jsonify, request
+from utils import parse_sefaria_url, fetch_text, process_text_for_display
+import json
 
 app = Flask(__name__)
 
@@ -9,7 +11,7 @@ tractates = ["Berakhot", "Shabbat", "Eruvin", "Pesachim", "Shekalim", "Yoma", "S
     "Bava Batra", "Sanhedrin", "Makkot", "Shevuot", "Avodah Zarah", "Horayot"]
 
 # Generate pages
-pages = [f"{daf}{suffix}" for daf in range(2, 21) for suffix in ['a', 'b']]
+pages = [f"{daf}{suffix}" for daf in range(2, 41) for suffix in ['a', 'b']]
 
 @app.route('/')
 def home():
@@ -19,37 +21,43 @@ def home():
 def health():
     return jsonify({"status": "ok", "message": "Talmud Viewer API is running"})
 
-# Mock API endpoint with more realistic data
+# Real API endpoint
 @app.route('/api/fetch', methods=['POST'])
 def fetch():
     data = request.json
     
-    # Create mock response based on request
-    if data.get('input_method') == 'dropdown':
-        tractate = data.get('tractate', 'Unknown')
-        page = data.get('page', 'Unknown')
-        section = data.get('section', 'All')
+    try:
+        if data.get('input_method') == 'dropdown':
+            # Fetch by tractate, page, section
+            tractate = data.get('tractate')
+            page = data.get('page')
+            section = data.get('section')
+            
+            if section and section.isdigit():
+                section = int(section)
+            else:
+                section = None
+                
+            text_data = fetch_text(tractate, page, section)
+            
+        else:
+            # Fetch by Sefaria URL
+            url = data.get('url')
+            if not url:
+                return jsonify({"error": "Please enter a valid Sefaria URL"})
+                
+            parsed = parse_sefaria_url(url)
+            if 'error' in parsed:
+                return jsonify({"error": parsed['error']})
+                
+            text_data = fetch_text(parsed['tractate'], parsed['page'], parsed['section'])
         
-        # Generate different mock responses based on inputs
-        mock_data = {
-            "status": "success",
-            "mock": True,
-            "reference": f"{tractate} {page}:{section if section else 'All'}",
-            "hebrew": "שלום זהו טקסט עברי לדוגמה. בקרוב יהיה כאן את הטקסט האמיתי מהתלמוד.",
-            "text": f"This is mock text for {tractate} {page}, section {section if section else 'All'}. " +
-                   "In the next step, we'll integrate with the real Sefaria API to retrieve actual Talmud text. " +
-                   "This sample text demonstrates that the form, API, and UI flow is working correctly."
-        }
-    else:  # URL method
-        url = data.get('url', '')
-        mock_data = {
-            "status": "success",
-            "mock": True,
-            "reference": "URL Reference",
-            "url": url,
-            "hebrew": "שלום זהו טקסט עברי לדוגמה. בקרוב יהיה כאן את הטקסט האמיתי מהתלמוד.",
-            "text": f"This is mock text for URL: {url}. " +
-                   "In the next step, we'll parse this URL and use the Sefaria API to retrieve the actual text."
-        }
-    
-    return jsonify(mock_data)
+        # Process the text for display
+        if 'error' in text_data:
+            return jsonify(text_data)
+            
+        result = process_text_for_display(text_data)
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"})
