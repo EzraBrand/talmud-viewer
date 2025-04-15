@@ -1,10 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return jsonify({"status": "ok", "message": "Hello from Talmud Viewer"})
+    return render_template('basic.html')
 
-# Required for Vercel
-app.debug = False
+@app.route('/api/health')
+def health():
+    return jsonify({"status": "ok", "message": "Talmud Viewer API is running"})
