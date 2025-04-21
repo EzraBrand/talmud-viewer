@@ -11,6 +11,11 @@
     }
   ],
   "routes": [
+    { 
+      "src": "/api/fetch-talmud", 
+      "dest": "/api/fetch-talmud.js",
+      "methods": ["POST"]
+    },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)", "dest": "/index.py" }
   ]
