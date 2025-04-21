@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Send request to server
-        fetch('/fetch', {
+        fetch('/api/fetch-talmud', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
