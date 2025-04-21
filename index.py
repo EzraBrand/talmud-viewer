@@ -11,7 +11,7 @@ tractates = ["Berakhot", "Shabbat", "Eruvin", "Pesachim", "Shekalim", "Yoma", "S
     "Bava Batra", "Sanhedrin", "Makkot", "Shevuot", "Avodah Zarah", "Horayot"]
 
 # Generate pages
-pages = [f"{daf}{suffix}" for daf in range(2, 41) for suffix in ['a', 'b']]
+pages = [f"{daf}{suffix}" for daf in range(2, 180) for suffix in ['a', 'b']]
 
 @app.route('/')
 def home():
