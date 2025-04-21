@@ -1,8 +1,7 @@
 import os
-import os
 from flask import Flask, render_template, request, jsonify
 from utils import (
-    parse_sefaria_url, fetch_text, fetch_text_range, 
+    parse_sefaria_url, fetch_text, 
     process_text_for_display
 )
 
@@ -53,10 +52,7 @@ def fetch():
         if 'error' in parsed:
             return jsonify({"error": parsed['error']})
             
-        if parsed['type'] == 'single':
-            text_data = fetch_text(parsed['tractate'], parsed['page'], parsed['section'])
-        else:
-            text_data = fetch_text_range(parsed['start'], parsed['end'])
+        text_data = fetch_text(parsed['tractate'], parsed['page'], parsed['section'])
     
     # Process the text for display
     if 'error' in text_data:
@@ -67,6 +63,7 @@ def fetch():
 
 if __name__ == '__main__':
     # This line is not needed for Vercel deployment
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 
 @app.route('/health')
 def health():
